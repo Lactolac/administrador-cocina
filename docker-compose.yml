@@ -3,7 +3,7 @@ version: '3.8'
 services:
   backend:
     image: 'docker-registry.yes.com.sv/cocina-planilla:backend'
-    container_name: cocina-back
+    container_name: planilla-back
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -21,7 +21,7 @@ services:
       driver: gelf
       options:
         gelf-address: "udp://${LOG_SERVER:-192.168.101.175}:12201"
-        tag: "cocina-back"
+        tag: "planilla-back"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/auth/verify"]
       interval: 30s
@@ -39,7 +39,7 @@ services:
 
   frontend:
     image: 'docker-registry.yes.com.sv/cocina-planilla:frontend'
-    container_name: cocina-front
+    container_name: planilla-front
     restart: unless-stopped
     expose:
       - "80"
@@ -51,7 +51,7 @@ services:
       driver: gelf
       options:
         gelf-address: "udp://${LOG_SERVER:-192.168.101.175}:12201"
-        tag: "cocina-front"
+        tag: "planilla-front"
     deploy:
       resources:
         limits:
