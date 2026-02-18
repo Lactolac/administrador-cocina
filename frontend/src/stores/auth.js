@@ -88,12 +88,23 @@ export const useAuthStore = defineStore('auth', () => {
       return
     }
 
-    if (savedUser && savedToken && savedExpiry) {
-      user.value = JSON.parse(savedUser)
-      token.value = savedToken
-      sessionExpiry.value = savedExpiry
-      isAuthenticated.value = true
-      axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+    if (savedUser && savedToken && savedExpiry && savedUser !== 'undefined') {
+      try {
+        user.value = JSON.parse(savedUser)
+        token.value = savedToken
+        sessionExpiry.value = savedExpiry
+        isAuthenticated.value = true
+        axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+      } catch (e) {
+        // Invalid JSON, clear everything
+        console.error('Error parsing user data:', e)
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        localStorage.removeItem('sessionExpiry')
+        user.value = null
+        token.value = null
+        isAuthenticated.value = false
+      }
     } else {
       // Clear state if no valid data
       user.value = null
