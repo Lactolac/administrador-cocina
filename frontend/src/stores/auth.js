@@ -74,9 +74,8 @@ export const useAuthStore = defineStore('auth', () => {
     const savedToken = localStorage.getItem('token')
     const savedExpiry = localStorage.getItem('sessionExpiry')
 
-    // Check if session has expired
-    if (savedExpiry && Date.now() > parseInt(savedExpiry)) {
-      // Session expired, clear everything synchronously
+    // Clear invalid data helper
+    const clearInvalidSession = () => {
       user.value = null
       token.value = null
       isAuthenticated.value = false
@@ -85,31 +84,40 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem('user')
       localStorage.removeItem('sessionExpiry')
       delete axios.defaults.headers.common['Authorization']
+    }
+
+    // If no token or no expiry, clear everything
+    if (!savedToken || !savedExpiry) {
+      clearInvalidSession()
       return
     }
 
-    if (savedUser && savedToken && savedExpiry && savedUser !== 'undefined') {
+    // Check if session has expired
+    const expiryTime = parseInt(savedExpiry)
+    if (isNaN(expiryTime) || Date.now() > expiryTime) {
+      clearInvalidSession()
+      return
+    }
+
+    // Validate user data
+    if (savedUser && savedUser !== 'undefined' && savedUser !== 'null') {
       try {
-        user.value = JSON.parse(savedUser)
-        token.value = savedToken
-        sessionExpiry.value = savedExpiry
-        isAuthenticated.value = true
-        axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+        const parsedUser = JSON.parse(savedUser)
+        if (parsedUser && typeof parsedUser === 'object') {
+          user.value = parsedUser
+          token.value = savedToken
+          sessionExpiry.value = savedExpiry
+          isAuthenticated.value = true
+          axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+        } else {
+          clearInvalidSession()
+        }
       } catch (e) {
-        // Invalid JSON, clear everything
         console.error('Error parsing user data:', e)
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        localStorage.removeItem('sessionExpiry')
-        user.value = null
-        token.value = null
-        isAuthenticated.value = false
+        clearInvalidSession()
       }
     } else {
-      // Clear state if no valid data
-      user.value = null
-      token.value = null
-      isAuthenticated.value = false
+      clearInvalidSession()
     }
   }
 
