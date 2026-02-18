@@ -202,7 +202,7 @@
 <script>
 import { Line, Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js'
-import { reportesService, alimentacionService, planillaService } from '../services/api'
+import { reportesService, alimentacionService, planillaService, empleadosService } from '../services/api'
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
@@ -358,8 +358,8 @@ export default {
         this.stats.totalPlatos = desayunos + almuerzos + cenas + refrigerios
         
         // Obtener total de empleados activos de la tabla empleados
-        const empleadosRes = await fetch('http://localhost:3001/api/empleados')
-        const empleadosData = await empleadosRes.json()
+        const empleadosRes = await empleadosService.getAll()
+        const empleadosData = empleadosRes.data
         this.stats.totalEmpleados = empleadosData.filter(e => e.activo).length
 
         const areasRes = await reportesService.getCostosArea(params)
