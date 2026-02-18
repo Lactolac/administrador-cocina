@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cocina-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_SCHEMA=${DB_SCHEMA:-administradorcocina}
+      - JWT_SECRET=${JWT_SECRET:-cocina-planilla-secret-key-2026}
+      - PORT=3001
+    networks:
+      - cocina-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/auth/verify"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cocina-frontend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:80"
+    depends_on:
+      - backend
+    networks:
+      - cocina-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  cocina-network:
+    driver: bridge

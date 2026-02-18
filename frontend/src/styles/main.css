@@ -1,0 +1,235 @@
+/* Custom Styles for Cocina Planilla Dashboard */
+@import 'vuetify/styles';
+
+/* Global Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* Modern Navigation Drawer */
+.modern-drawer {
+  background: linear-gradient(180deg, #0056a6 0%, #003d73 100%);
+  box-shadow: 0 4px 30px rgba(0, 86, 166, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modern-drawer .menu-item {
+  border-radius: 12px;
+  margin: 0 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-drawer .menu-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modern-drawer .menu-item--active {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Modern App Bar */
+.modern-app-bar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 86, 166, 0.1);
+  box-shadow: 0 2px 20px rgba(0, 86, 166, 0.1);
+}
+
+/* Background Design */
+.background-design {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.bg-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0056a6 0%, #1E88E5 50%, #64B5F6 100%);
+  opacity: 0.1;
+}
+
+.bg-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 25px 25px, rgba(0, 86, 166, 0.1) 2px, transparent 0),
+    radial-gradient(circle at 75px 75px, rgba(0, 86, 166, 0.1) 2px, transparent 0);
+  background-size: 100px 100px;
+  animation: patternMove 20s linear infinite;
+}
+
+@keyframes patternMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(100px, 100px); }
+}
+
+/* Content Card */
+.content-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  margin: 20px;
+  border: 1px solid rgba(0, 86, 166, 0.1);
+  box-shadow: 0 8px 40px rgba(0, 86, 166, 0.1);
+}
+
+/* App Bar */
+.v-app-bar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Cards */
+.v-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Buttons */
+.v-btn {
+  border-radius: 8px;
+  font-weight: 500;
+  text-transform: none;
+  transition: all 0.2s ease;
+}
+
+.v-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Inputs */
+.v-text-field, .v-select {
+  border-radius: 8px;
+}
+
+.v-text-field__field, .v-select__field {
+  border-radius: 8px;
+}
+
+/* Tables */
+.v-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.v-table .v-table__wrapper {
+  border-radius: 8px;
+}
+
+.v-table .v-table__wrapper table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.v-table thead th {
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+  font-weight: 600;
+  color: #475569;
+  font-size: 14px;
+}
+
+.v-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.v-table tbody tr:hover {
+  background-color: #F8FAFC;
+}
+
+/* Charts */
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+/* Stats Cards */
+.stats-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .v-container {
+    padding: 16px !important;
+  }
+  
+  .v-card {
+    margin-bottom: 16px;
+  }
+  
+  .text-h4 {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Loading States */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}

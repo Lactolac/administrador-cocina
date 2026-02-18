@@ -1,0 +1,118 @@
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import axios from 'axios'
+
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref(null)
+  const token = ref(null)
+  const isAuthenticated = ref(false)
+  const sessionExpiry = ref(null)
+
+  // Check if session has expired
+  const isSessionExpired = () => {
+    const savedExpiry = localStorage.getItem('sessionExpiry')
+    if (!savedExpiry) return true
+    return Date.now() > parseInt(savedExpiry)
+  }
+
+  const login = async (credentials) => {
+    try {
+      const response = await axios.post('/api/auth/login', {
+        username: credentials.username,
+        password: credentials.password,
+        country: credentials.country || 'sv'
+      })
+
+      const { user: userData, token: authToken, expiresIn } = response.data
+
+      user.value = userData
+      token.value = authToken
+      isAuthenticated.value = true
+
+      // Calculate expiry time (1 hour from now)
+      const expiryTime = Date.now() + (expiresIn || 3600) * 1000
+      sessionExpiry.value = expiryTime
+
+      // Save to localStorage
+      localStorage.setItem('token', authToken)
+      localStorage.setItem('user', JSON.stringify(userData))
+      localStorage.setItem('sessionExpiry', expiryTime.toString())
+
+      // Set axios header
+      axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
+
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await axios.post('/api/auth/logout')
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      // Clear state immediately
+      user.value = null
+      token.value = null
+      isAuthenticated.value = false
+      sessionExpiry.value = null
+
+      // Clear localStorage completely
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('sessionExpiry')
+
+      // Remove axios header
+      delete axios.defaults.headers.common['Authorization']
+    }
+  }
+
+  const checkAuth = () => {
+    const savedUser = localStorage.getItem('user')
+    const savedToken = localStorage.getItem('token')
+    const savedExpiry = localStorage.getItem('sessionExpiry')
+
+    // Check if session has expired
+    if (savedExpiry && Date.now() > parseInt(savedExpiry)) {
+      // Session expired, clear everything synchronously
+      user.value = null
+      token.value = null
+      isAuthenticated.value = false
+      sessionExpiry.value = null
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('sessionExpiry')
+      delete axios.defaults.headers.common['Authorization']
+      return
+    }
+
+    if (savedUser && savedToken && savedExpiry) {
+      user.value = JSON.parse(savedUser)
+      token.value = savedToken
+      sessionExpiry.value = savedExpiry
+      isAuthenticated.value = true
+      axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+    } else {
+      // Clear state if no valid data
+      user.value = null
+      token.value = null
+      isAuthenticated.value = false
+    }
+  }
+
+  // Initialize auth state
+  checkAuth()
+
+  return {
+    user,
+    token,
+    isAuthenticated,
+    sessionExpiry,
+    login,
+    logout,
+    checkAuth,
+    isSessionExpired
+  }
+})
