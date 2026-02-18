@@ -197,9 +197,8 @@ export default {
       return route.meta.title || 'Dashboard'
     },
     userName() {
-      if (this.authStore.user) {
-        const user = this.authStore.user
-        return user.nombre || user.username || 'Usuario'
+      if (this.authStore.user && this.authStore.user.username) {
+        return this.authStore.user.username
       }
       return 'Usuario'
     }
