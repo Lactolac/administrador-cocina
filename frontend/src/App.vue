@@ -53,7 +53,7 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <div class="d-flex align-center">
-          <span class="text-body-1 mr-2">Samuel Benavides</span>
+          <span class="text-body-1 mr-2">{{ userName }}</span>
           <v-chip 
             color="primary" 
             variant="tonal" 
@@ -195,6 +195,13 @@ export default {
     currentPageTitle() {
       const route = this.$route
       return route.meta.title || 'Dashboard'
+    },
+    userName() {
+      if (this.authStore.user) {
+        const user = this.authStore.user
+        return user.nombre || user.username || 'Usuario'
+      }
+      return 'Usuario'
     }
   }
 }

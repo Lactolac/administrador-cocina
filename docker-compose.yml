@@ -38,7 +38,7 @@ services:
           memory: 512M
 
   frontend:
-    image: 'docker-registry.yes.com.sv/cocina-planilla:frontend-v4'
+    image: 'docker-registry.yes.com.sv/cocina-planilla:frontend-v5'
     container_name: planilla-front
     restart: unless-stopped
     expose:
