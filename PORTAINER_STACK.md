@@ -37,8 +37,6 @@ services:
     image: ${DOCKER_REGISTRY:-}/cocina-frontend:latest
     container_name: cocina-frontend
     restart: unless-stopped
-    ports:
-      - "${PORT:-8080}:80"
     depends_on:
       - backend
     networks:
@@ -67,7 +65,6 @@ Configura estas variables en el Environment de Portainer:
 | DB_NAME | Nombre de la base de datos | cocina_planilla |
 | DB_SCHEMA | Schema de la base de datos | administradorcocina |
 | JWT_SECRET | Clave secreta para JWT | cambia-esto-en-produccion |
-| PORT | Puerto de la aplicación | 8080 |
 
 ## Instrucciones de Despliegue
 
@@ -95,7 +92,8 @@ docker push tu-registry/cocina-frontend:latest
 6. Configura las variables de entorno
 7. Haz clic en "Deploy the stack"
 
-## Acceso a la Aplicación
+## Notas
 
-Una vez desplegado, la aplicación estará disponible en:
-- **URL:** `http://tu-servidor:8080`
+- Los contenedores no exponen puertos directamente. Usa un reverse proxy (Traefik/Nginx) para acceder a la aplicación.
+- El frontend escucha en el puerto 80 internamente
+- El backend escucha en el puerto 3001 internamente
