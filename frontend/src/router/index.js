@@ -67,22 +67,29 @@ router.beforeEach((to, from, next) => {
   const sessionExpiry = localStorage.getItem('sessionExpiry')
   const requiresAuth = to.meta.requiresAuth !== false
 
-  // Check if session has expired
+  // Check if session has expired or token is missing
   let isSessionExpired = false
-  if (sessionExpiry) {
-    isSessionExpired = Date.now() > parseInt(sessionExpiry)
+  let hasValidSession = false
+  
+  if (token && sessionExpiry) {
+    const expiryTime = parseInt(sessionExpiry)
+    if (!isNaN(expiryTime) && Date.now() < expiryTime) {
+      hasValidSession = true
+    } else {
+      isSessionExpired = true
+    }
   }
 
-  // If session expired, clear storage
-  if (isSessionExpired || !token) {
+  // If session expired or no valid token, clear storage
+  if (!hasValidSession) {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     localStorage.removeItem('sessionExpiry')
   }
 
-  // If going to root, redirect to login or dashboard
+  // If going to root, redirect appropriately
   if (to.path === '/') {
-    if (token && !isSessionExpired) {
+    if (hasValidSession) {
       next('/dashboard')
     } else {
       next('/login')
@@ -90,9 +97,10 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  if (requiresAuth && (!token || isSessionExpired)) {
+  // Protect routes that require auth
+  if (requiresAuth && !hasValidSession) {
     next('/login')
-  } else if (to.path === '/login' && token && !isSessionExpired) {
+  } else if (to.path === '/login' && hasValidSession) {
     next('/dashboard')
   } else {
     next()
