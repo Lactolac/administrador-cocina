@@ -19,7 +19,7 @@
     <v-card class="mb-4">
       <v-card-text>
         <v-row>
-          <v-col cols="12" md="6">
+          <v-col cols="12" md="4">
             <v-text-field
               v-model="search"
               label="Buscar"
@@ -29,11 +29,21 @@
               @update:modelValue="filterProductos"
             ></v-text-field>
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="12" md="4">
             <v-select
               v-model="filters.categoria"
               :items="[{ value: '', title: 'Todas' }, ...categorias]"
               label="Categoría"
+              variant="outlined"
+              density="compact"
+              @update:modelValue="loadProductos"
+            ></v-select>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.proveedor"
+              :items="[{ value: '', title: 'Todos' }, ...proveedores]"
+              label="Proveedor"
               variant="outlined"
               density="compact"
               @update:modelValue="loadProductos"
@@ -56,6 +66,9 @@
         </template>
         <template v-slot:item.categoria="{ item }">
           <v-chip size="small" color="secondary">{{ item.categoria || 'Sin categoría' }}</v-chip>
+        </template>
+        <template v-slot:item.proveedor="{ item }">
+          <v-chip size="small" color="info">{{ item.proveedor || 'Sin proveedor' }}</v-chip>
         </template>
         <template v-slot:item.actions="{ item }">
           <v-btn icon size="small" variant="text" @click="openModal(item)">
@@ -108,6 +121,14 @@
               :items="categorias"
               label="Categoría"
               variant="outlined"
+              class="mb-3"
+            ></v-combobox>
+            <v-combobox
+              v-model="form.proveedor"
+              :items="proveedoresList"
+              label="Proveedor"
+              variant="outlined"
+              hint="Seleccione o escriba un nuevo proveedor"
             ></v-combobox>
           </v-form>
         </v-card-text>
@@ -133,13 +154,16 @@ export default {
       productos: [],
       filteredProductos: [],
       categorias: [],
+      proveedores: [],
+      proveedoresList: [],
       search: '',
-      filters: { categoria: '' },
+      filters: { categoria: '', proveedor: '' },
       form: {
         descripcion: '',
         unidad_medida: '',
         precio_unitario: 0,
-        categoria: ''
+        categoria: '',
+        proveedor: ''
       },
       editingItem: null,
       headers: [
@@ -147,6 +171,7 @@ export default {
         { title: 'Unidad', key: 'unidad_medida' },
         { title: 'Precio Unit.', key: 'precio_unitario', align: 'end' },
         { title: 'Categoría', key: 'categoria' },
+        { title: 'Proveedor', key: 'proveedor' },
         { title: 'Acciones', key: 'actions', sortable: false }
       ]
     }
@@ -173,6 +198,15 @@ export default {
         console.error('Error loading categorias:', error)
       }
     },
+    async loadProveedores() {
+      try {
+        const res = await productosService.getProveedores()
+        this.proveedoresList = res.data
+        this.proveedores = res.data.map(p => ({ value: p, title: p }))
+      } catch (error) {
+        console.error('Error loading proveedores:', error)
+      }
+    },
     filterProductos() {
       if (!this.search) {
         this.filteredProductos = this.productos
@@ -180,7 +214,8 @@ export default {
       }
       const searchLower = this.search.toLowerCase()
       this.filteredProductos = this.productos.filter(p => 
-        p.descripcion.toLowerCase().includes(searchLower)
+        p.descripcion.toLowerCase().includes(searchLower) ||
+        (p.proveedor && p.proveedor.toLowerCase().includes(searchLower))
       )
     },
     openModal(item = null) {
@@ -192,7 +227,8 @@ export default {
           descripcion: '',
           unidad_medida: '',
           precio_unitario: 0,
-          categoria: ''
+          categoria: '',
+          proveedor: ''
         }
       }
       this.dialog = true
@@ -209,6 +245,7 @@ export default {
         this.dialog = false
         this.loadProductos()
         this.loadCategorias()
+        this.loadProveedores()
       } catch (error) {
         console.error('Error saving producto:', error)
         Swal.fire('Error', 'Error al guardar producto', 'error')
@@ -240,6 +277,7 @@ export default {
   mounted() {
     this.loadProductos()
     this.loadCategorias()
+    this.loadProveedores()
   }
 }
 </script>

@@ -7,7 +7,7 @@ const schema = process.env.DB_SCHEMA || 'administradorcocina';
 // Obtener todos los productos
 router.get('/', async (req, res) => {
   try {
-    const { categoria } = req.query;
+    const { categoria, proveedor } = req.query;
     let query = `SELECT * FROM ${schema}.productos WHERE 1=1`;
     const params = [];
 
@@ -15,8 +15,13 @@ router.get('/', async (req, res) => {
       params.push(`%${categoria}%`);
       query += ` AND categoria ILIKE $${params.length}`;
     }
+    
+    if (proveedor) {
+      params.push(`%${proveedor}%`);
+      query += ` AND proveedor ILIKE $${params.length}`;
+    }
 
-    query += ' ORDER BY descripcion';
+    query += ' ORDER BY proveedor, descripcion';
 
     const result = await pool.query(query, params);
     res.json(result.rows);
@@ -36,6 +41,19 @@ router.get('/categorias', async (req, res) => {
   } catch (error) {
     console.error('Error fetching categorias:', error);
     res.status(500).json({ error: 'Error al obtener categorías' });
+  }
+});
+
+// Obtener proveedores únicos
+router.get('/proveedores', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT proveedor FROM ${schema}.productos WHERE proveedor IS NOT NULL AND proveedor != '' ORDER BY proveedor`
+    );
+    res.json(result.rows.map(row => row.proveedor));
+  } catch (error) {
+    console.error('Error fetching proveedores:', error);
+    res.status(500).json({ error: 'Error al obtener proveedores' });
   }
 });
 
@@ -63,15 +81,15 @@ router.get('/:id', async (req, res) => {
 // Crear producto
 router.post('/', async (req, res) => {
   try {
-    const { descripcion, unidad_medida, precio_unitario, categoria } = req.body;
+    const { descripcion, unidad_medida, precio_unitario, categoria, proveedor } = req.body;
 
     const query = `
-      INSERT INTO ${schema}.productos (descripcion, unidad_medida, precio_unitario, categoria)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO ${schema}.productos (descripcion, unidad_medida, precio_unitario, categoria, proveedor)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
 
-    const result = await pool.query(query, [descripcion, unidad_medida, precio_unitario, categoria]);
+    const result = await pool.query(query, [descripcion, unidad_medida, precio_unitario, categoria, proveedor]);
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -84,16 +102,16 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { descripcion, unidad_medida, precio_unitario, categoria } = req.body;
+    const { descripcion, unidad_medida, precio_unitario, categoria, proveedor } = req.body;
 
     const query = `
       UPDATE ${schema}.productos 
-      SET descripcion = $1, unidad_medida = $2, precio_unitario = $3, categoria = $4, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $5
+      SET descripcion = $1, unidad_medida = $2, precio_unitario = $3, categoria = $4, proveedor = $5, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $6
       RETURNING *
     `;
 
-    const result = await pool.query(query, [descripcion, unidad_medida, precio_unitario, categoria, id]);
+    const result = await pool.query(query, [descripcion, unidad_medida, precio_unitario, categoria, proveedor, id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Producto no encontrado' });

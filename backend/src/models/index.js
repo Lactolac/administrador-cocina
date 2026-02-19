@@ -30,10 +30,18 @@ const createTables = async () => {
         unidad_medida VARCHAR(50),
         precio_unitario DECIMAL(10,4),
         categoria VARCHAR(100),
+        proveedor VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    
+    // Agregar columna proveedor si no existe
+    try {
+      await pool.query(`ALTER TABLE ${schema}.productos ADD COLUMN IF NOT EXISTS proveedor VARCHAR(100)`);
+    } catch (err) {
+      // Column already exists, ignore error
+    }
 
     // Tabla de inventario/movimientos
     await pool.query(`
@@ -117,6 +125,20 @@ const createTables = async () => {
         mes VARCHAR(20),
         anio INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Tabla de usuarios del sistema
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${schema}.usuarios (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        nombre VARCHAR(100),
+        rol VARCHAR(20) DEFAULT 'usuario',
+        activo BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 

@@ -28,10 +28,30 @@
             <!-- Form Section -->
             <v-card-text class="pa-8">
               <v-form @submit.prevent="handleLogin" v-model="valid">
+                <!-- Login Type Selector -->
+                <v-btn-toggle
+                  v-model="form.loginType"
+                  mandatory
+                  color="primary"
+                  variant="outlined"
+                  divided
+                  class="mb-6"
+                  style="width: 100%;"
+                >
+                  <v-btn value="ad" style="width: 50%;">
+                    <v-icon start>mdi-domain</v-icon>
+                    Dominio AD
+                  </v-btn>
+                  <v-btn value="local" style="width: 50%;">
+                    <v-icon start>mdi-account</v-icon>
+                    Usuario Local
+                  </v-btn>
+                </v-btn-toggle>
+
                 <!-- Username Field -->
                 <v-text-field
                   v-model="form.username"
-                  label="Usuario"
+                  :label="form.loginType === 'ad' ? 'Usuario de Dominio' : 'Usuario'"
                   prepend-inner-icon="mdi-account-circle"
                   variant="outlined"
                   density="comfortable"
@@ -44,7 +64,7 @@
                 <!-- Password Field -->
                 <v-text-field
                   v-model="form.password"
-                  label="Contraseña"
+                  :label="form.loginType === 'ad' ? 'Contraseña de Dominio' : 'Contraseña'"
                   prepend-inner-icon="mdi-lock"
                   :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                   :type="showPassword ? 'text' : 'password'"
@@ -118,7 +138,7 @@ export default {
     const form = ref({
       username: '',
       password: '',
-      country: 'sv'
+      loginType: 'ad'
     })
 
     const rules = {
@@ -132,7 +152,8 @@ export default {
       error.value = ''
 
       try {
-        await authStore.login(form.value)
+        const result = await authStore.login(form.value)
+        
         Swal.fire({
           icon: 'success',
           title: '¡Bienvenido!',
@@ -140,7 +161,13 @@ export default {
           timer: 1500,
           showConfirmButton: false
         })
-        router.push('/dashboard')
+        // Redirect based on user role
+        const userRole = result?.user?.rol
+        if (userRole === 'admin') {
+          router.push('/dashboard')
+        } else {
+          router.push('/platos')
+        }
       } catch (err) {
         Swal.fire({
           icon: 'error',

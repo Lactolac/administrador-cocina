@@ -342,7 +342,15 @@ export default {
     openModal(item = null) {
       this.editingItem = item
       if (item) {
-        this.form = { ...item }
+        // Convertir fecha ISO a formato YYYY-MM-DD para el input date
+        let fechaFormateada = item.fecha
+        if (item.fecha && item.fecha.includes('T')) {
+          fechaFormateada = item.fecha.split('T')[0]
+        }
+        this.form = { 
+          ...item,
+          fecha: fechaFormateada
+        }
       } else {
         this.form = {
           fecha: new Date().toISOString().split('T')[0],

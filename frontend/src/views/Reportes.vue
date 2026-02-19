@@ -63,6 +63,51 @@
       </v-col>
     </v-row>
 
+    <!-- Gastos por Proveedor -->
+    <v-card class="elevation-2 mb-6">
+      <v-card-title>
+        <v-icon start>mdi-truck</v-icon>
+        Gastos por Proveedor
+      </v-card-title>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="5">
+            <div style="height: 300px;">
+              <Doughnut :data="proveedorChartData" :options="doughnutOptions" />
+            </div>
+          </v-col>
+          <v-col cols="12" md="7">
+            <v-table density="compact" style="max-height: 300px; overflow: auto;">
+              <thead>
+                <tr>
+                  <th>Proveedor</th>
+                  <th class="text-right">Productos</th>
+                  <th class="text-right">Total Gasto</th>
+                  <th class="text-right">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="prov in gastosProveedor.proveedores" :key="prov.proveedor">
+                  <td>{{ prov.proveedor }}</td>
+                  <td class="text-right">{{ prov.total_productos }}</td>
+                  <td class="text-right">${{ formatNumber(prov.total_gasto) }}</td>
+                  <td class="text-right">{{ calcularPorcentaje(prov.total_gasto) }}%</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr style="font-weight: bold; background: #f5f5f5;">
+                  <td>TOTAL</td>
+                  <td class="text-right">{{ totalProductosProveedor }}</td>
+                  <td class="text-right">${{ formatNumber(gastosProveedor.total_general) }}</td>
+                  <td class="text-right">100%</td>
+                </tr>
+              </tfoot>
+            </v-table>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+
     <!-- Charts Row -->
     <v-row class="mb-6">
       <v-col cols="12" md="8">
@@ -186,6 +231,7 @@ export default {
       tendencia: [],
       eficienciaEmpleados: [],
       costosArea: [],
+      gastosProveedor: { proveedores: [], total_general: 0 },
       totalInventario: 0,
       chartOptions: {
         responsive: true,
@@ -196,7 +242,7 @@ export default {
       doughnutOptions: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
       },
       barOptions: {
         responsive: true,
@@ -261,6 +307,23 @@ export default {
           backgroundColor: ['#1976D2', '#4CAF50']
         }]
       }
+    },
+    proveedorChartData() {
+      const colores = [
+        '#1976D2', '#4CAF50', '#FF9800', '#9C27B0', '#F44336', 
+        '#00BCD4', '#FF5722', '#795548', '#607D8B', '#E91E63',
+        '#3F51B5', '#009688', '#FFC107', '#673AB7', '#2196F3'
+      ]
+      return {
+        labels: this.gastosProveedor.proveedores.map(p => p.proveedor),
+        datasets: [{
+          data: this.gastosProveedor.proveedores.map(p => p.total_gasto),
+          backgroundColor: colores.slice(0, this.gastosProveedor.proveedores.length)
+        }]
+      }
+    },
+    totalProductosProveedor() {
+      return this.gastosProveedor.proveedores.reduce((sum, p) => sum + (parseInt(p.total_productos) || 0), 0)
     }
   },
   methods: {
@@ -268,13 +331,18 @@ export default {
       if (!num) return '0.00'
       return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     },
+    calcularPorcentaje(valor) {
+      if (!this.gastosProveedor.total_general || !valor) return '0.00'
+      return ((parseFloat(valor) / parseFloat(this.gastosProveedor.total_general)) * 100).toFixed(1)
+    },
     async loadAllReports() {
       await Promise.all([
         this.loadConsolidado(),
         this.loadTendencia(),
         this.loadEficiencia(),
         this.loadCostosArea(),
-        this.loadTotalInventario()
+        this.loadTotalInventario(),
+        this.loadGastosProveedor()
       ])
     },
     async loadConsolidado() {
@@ -311,16 +379,22 @@ export default {
     },
     async loadTotalInventario() {
       try {
-        // Obtener todos los registros del año sin filtrar por mes (igual que en Inventario.vue)
         const res = await inventarioService.getAll({ anio: this.selectedAnio })
         const data = res.data
-        // Sumar todos los totales de inventario (igual que calculateResumen en Inventario.vue)
         this.totalInventario = data.reduce((sum, i) => {
           const total = parseFloat(i.total_inventario) || 0
           return sum + (isNaN(total) ? 0 : total)
         }, 0)
       } catch (error) {
         console.error('Error loading inventario total:', error)
+      }
+    },
+    async loadGastosProveedor() {
+      try {
+        const res = await reportesService.getGastosProveedor({ anio: this.selectedAnio })
+        this.gastosProveedor = res.data
+      } catch (error) {
+        console.error('Error loading gastos proveedor:', error)
       }
     }
   },

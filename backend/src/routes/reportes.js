@@ -210,6 +210,7 @@ router.get('/productos-consumo', async (req, res) => {
         p.descripcion,
         p.unidad_medida,
         p.categoria,
+        p.proveedor,
         SUM(i.consumo) as total_consumo,
         SUM(i.total_consumo) as valor_consumo,
         AVG(i.precio_unitario) as precio_promedio
@@ -220,12 +221,12 @@ router.get('/productos-consumo', async (req, res) => {
     const params = [anioParam];
 
     if (mes) {
-      params.push(mes);
-      query += ` AND i.mes = $${params.length}`;
+      params.push(mes.toUpperCase());
+      query += ` AND UPPER(i.mes) = $${params.length}`;
     }
 
     query += ` 
-      GROUP BY p.id, p.descripcion, p.unidad_medida, p.categoria
+      GROUP BY p.id, p.descripcion, p.unidad_medida, p.categoria, p.proveedor
       ORDER BY total_consumo DESC
       LIMIT $${params.length + 1}
     `;
@@ -236,6 +237,52 @@ router.get('/productos-consumo', async (req, res) => {
   } catch (error) {
     console.error('Error generating product consumption report:', error);
     res.status(500).json({ error: 'Error al generar reporte de consumo' });
+  }
+});
+
+// Reporte de gastos por proveedor
+router.get('/gastos-proveedor', async (req, res) => {
+  try {
+    const { mes, anio } = req.query;
+    const anioParam = anio || new Date().getFullYear();
+
+    let query = `
+      SELECT 
+        p.proveedor,
+        COUNT(DISTINCT p.id) as total_productos,
+        SUM(i.inv_final) as total_cantidad,
+        SUM(i.total_inventario) as total_gasto,
+        AVG(i.precio_unitario) as precio_promedio
+      FROM ${schema}.inventario i
+      JOIN ${schema}.productos p ON i.producto_id = p.id
+      WHERE i.anio = $1 AND p.proveedor IS NOT NULL AND p.proveedor != ''
+    `;
+    const params = [anioParam];
+
+    if (mes) {
+      params.push(mes.toUpperCase());
+      query += ` AND UPPER(i.mes) = $${params.length}`;
+    }
+
+    query += ` 
+      GROUP BY p.proveedor
+      ORDER BY total_gasto DESC
+    `;
+
+    const result = await pool.query(query, params);
+    
+    // Calcular total general
+    const totalGeneral = result.rows.reduce((sum, row) => {
+      return sum + (parseFloat(row.total_gasto) || 0);
+    }, 0);
+    
+    res.json({
+      proveedores: result.rows,
+      total_general: totalGeneral
+    });
+  } catch (error) {
+    console.error('Error generating provider expenses report:', error);
+    res.status(500).json({ error: 'Error al generar reporte de gastos por proveedor' });
   }
 });
 

@@ -20,7 +20,8 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await axios.post('/api/auth/login', {
         username: credentials.username,
         password: credentials.password,
-        country: credentials.country || 'sv'
+        country: credentials.country || 'sv',
+        loginType: credentials.loginType || 'ad'
       })
 
       const { user: userData, token: authToken, expiresIn } = response.data

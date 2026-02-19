@@ -74,7 +74,18 @@ export const reportesService = {
   getCostosArea: (params) => api.get('/reportes/costos-area', { params }),
   getTendenciaGastos: (anio) => api.get('/reportes/tendencia-gastos', { params: { anio } }),
   getEficienciaEmpleados: (params) => api.get('/reportes/eficiencia-empleados', { params }),
-  getProductosConsumo: (params) => api.get('/reportes/productos-consumo', { params })
+  getProductosConsumo: (params) => api.get('/reportes/productos-consumo', { params }),
+  getGastosProveedor: (params) => api.get('/reportes/gastos-proveedor', { params })
+}
+
+// Servicios de Usuarios
+export const usuariosService = {
+  getAll: () => api.get('/usuarios'),
+  getById: (id) => api.get(`/usuarios/${id}`),
+  create: (data) => api.post('/usuarios', data),
+  update: (id, data) => api.put(`/usuarios/${id}`, data),
+  delete: (id) => api.delete(`/usuarios/${id}`),
+  changePassword: (id, data) => api.put(`/usuarios/${id}/password`, data)
 }
 
 // Health check

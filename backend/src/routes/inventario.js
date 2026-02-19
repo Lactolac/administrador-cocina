@@ -7,9 +7,9 @@ const schema = process.env.DB_SCHEMA || 'administradorcocina';
 // Obtener todo el inventario
 router.get('/', async (req, res) => {
   try {
-    const { mes, anio, categoria } = req.query;
+    const { mes, anio, categoria, proveedor } = req.query;
     let query = `
-      SELECT i.*, p.descripcion, p.unidad_medida, p.categoria
+      SELECT i.*, p.descripcion, p.unidad_medida, p.categoria, p.proveedor
       FROM ${schema}.inventario i
       JOIN ${schema}.productos p ON i.producto_id = p.id
       WHERE 1=1
@@ -17,8 +17,8 @@ router.get('/', async (req, res) => {
     const params = [];
 
     if (mes) {
-      params.push(mes);
-      query += ` AND i.mes = $${params.length}`;
+      params.push(mes.toUpperCase());
+      query += ` AND UPPER(i.mes) = $${params.length}`;
     }
     if (anio) {
       params.push(anio);
@@ -28,8 +28,12 @@ router.get('/', async (req, res) => {
       params.push(categoria);
       query += ` AND p.categoria = $${params.length}`;
     }
+    if (proveedor) {
+      params.push(proveedor);
+      query += ` AND p.proveedor = $${params.length}`;
+    }
 
-    query += ' ORDER BY i.fecha DESC, p.descripcion';
+    query += ' ORDER BY p.proveedor, i.fecha DESC, p.descripcion';
 
     const result = await pool.query(query, params);
     res.json(result.rows);

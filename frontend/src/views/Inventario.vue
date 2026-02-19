@@ -49,6 +49,16 @@
               @update:modelValue="loadInventario"
             ></v-select>
           </v-col>
+          <v-col cols="12" md="3">
+            <v-select
+              v-model="filters.proveedor"
+              :items="[{ value: '', title: 'Todos' }, ...proveedores]"
+              label="Proveedor"
+              variant="outlined"
+              density="compact"
+              @update:modelValue="loadInventario"
+            ></v-select>
+          </v-col>
         </v-row>
       </v-card-text>
     </v-card>
@@ -74,6 +84,9 @@
         :items-per-page="10"
         class="elevation-1"
       >
+        <template v-slot:item.proveedor="{ item }">
+          <v-chip size="small" color="info">{{ item.proveedor || 'Sin proveedor' }}</v-chip>
+        </template>
         <template v-slot:item.categoria="{ item }">
           <v-chip size="small" color="secondary">{{ item.categoria }}</v-chip>
         </template>
@@ -203,8 +216,9 @@ export default {
       inventario: [],
       productos: [],
       categorias: [],
+      proveedores: [],
       resumen: { costo_total: 0 },
-      filters: { mes: '', anio: 2026, categoria: '' },
+      filters: { mes: '', anio: 2026, categoria: '', proveedor: '' },
       form: {
         producto_id: '',
         fecha: '',
@@ -217,6 +231,7 @@ export default {
       },
       editingItem: null,
       headers: [
+        { title: 'Proveedor', key: 'proveedor' },
         { title: 'Producto', key: 'descripcion' },
         { title: 'Unidad', key: 'unidad_medida' },
         { title: 'Categoría', key: 'categoria' },
@@ -271,6 +286,8 @@ export default {
         this.productos = res.data
         const catRes = await productosService.getCategorias()
         this.categorias = catRes.data
+        const provRes = await productosService.getProveedores()
+        this.proveedores = provRes.data.map(p => ({ value: p, title: p }))
       } catch (error) {
         console.error('Error loading productos:', error)
       }
@@ -286,7 +303,15 @@ export default {
     openModal(item = null) {
       this.editingItem = item
       if (item) {
-        this.form = { ...item }
+        // Convertir fecha ISO a formato YYYY-MM-DD para el input date
+        let fechaFormateada = item.fecha
+        if (item.fecha && item.fecha.includes('T')) {
+          fechaFormateada = item.fecha.split('T')[0]
+        }
+        this.form = { 
+          ...item,
+          fecha: fechaFormateada
+        }
       } else {
         this.form = {
           producto_id: '',

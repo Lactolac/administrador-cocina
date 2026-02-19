@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <!-- Show navbar only if authenticated -->
-    <template v-if="authStore.isAuthenticated">
+    <!-- Show navbar only if authenticated AND not on platos route -->
+    <template v-if="authStore.isAuthenticated && !isPlatosRoute">
       <!-- Modern Navigation Drawer -->
       <v-navigation-drawer
         v-model="drawer"
@@ -24,7 +24,7 @@
         <!-- Menu Items -->
         <v-list density="comfortable" nav class="menu-items">
           <v-list-item
-            v-for="item in menuItems"
+            v-for="item in filteredMenuItems"
             :key="item.title"
             :prepend-icon="item.icon"
             :title="item.title"
@@ -60,7 +60,7 @@
             size="small"
             class="mr-2"
           >
-            Cocina Admin
+            {{ userRoleLabel }}
           </v-chip>
           <v-btn 
             color="error" 
@@ -96,7 +96,7 @@
       </v-main>
     </template>
 
-    <!-- Show only router-view for login page -->
+    <!-- Show only router-view for login page and platos route -->
     <template v-else>
       <v-main>
         <router-view />
@@ -180,14 +180,15 @@ export default {
     return {
       drawer: true,
       rail: false,
-      menuItems: [
-        { title: 'Dashboard', icon: 'mdi-view-dashboard', route: '/dashboard' },
-        { title: 'Inventario', icon: 'mdi-package-variant', route: '/inventario' },
-        { title: 'Alimentación', icon: 'mdi-food', route: '/alimentacion' },
-        { title: 'Planilla', icon: 'mdi-cash-multiple', route: '/planilla' },
-        { title: 'Empleados', icon: 'mdi-account-group', route: '/empleados' },
-        { title: 'Productos', icon: 'mdi-tag-multiple', route: '/productos' },
-        { title: 'Reportes', icon: 'mdi-chart-box', route: '/reportes' },
+      allMenuItems: [
+        { title: 'Dashboard', icon: 'mdi-view-dashboard', route: '/dashboard', adminOnly: true },
+        { title: 'Inventario', icon: 'mdi-package-variant', route: '/inventario', adminOnly: true },
+        { title: 'Alimentación', icon: 'mdi-food', route: '/alimentacion', adminOnly: true },
+        { title: 'Planilla', icon: 'mdi-cash-multiple', route: '/planilla', adminOnly: true },
+        { title: 'Empleados', icon: 'mdi-account-group', route: '/empleados', adminOnly: true },
+        { title: 'Productos', icon: 'mdi-tag-multiple', route: '/productos', adminOnly: true },
+        { title: 'Reportes', icon: 'mdi-chart-box', route: '/reportes', adminOnly: true },
+        { title: 'Usuarios', icon: 'mdi-account-cog', route: '/usuarios', adminOnly: true },
       ]
     }
   },
@@ -201,6 +202,25 @@ export default {
         return this.authStore.user.username
       }
       return 'Usuario'
+    },
+    userRole() {
+      if (this.authStore.user && this.authStore.user.rol) {
+        return this.authStore.user.rol
+      }
+      return 'usuario'
+    },
+    userRoleLabel() {
+      return this.userRole === 'admin' ? 'Administrador' : 'Usuario'
+    },
+    filteredMenuItems() {
+      // Los usuarios no admin no ven menú (solo ven la vista de platos)
+      if (this.userRole !== 'admin') {
+        return []
+      }
+      return this.allMenuItems
+    },
+    isPlatosRoute() {
+      return this.$route.path === '/platos'
     }
   }
 }
