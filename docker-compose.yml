@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: 'docker-registry.yes.com.sv/cocina-planilla:backend'
+    image: 'docker-registry.yes.com.sv/cocina-planilla:backend-v2'
     container_name: planilla-back
     restart: unless-stopped
     environment:
@@ -38,7 +38,7 @@ services:
           memory: 512M
 
   frontend:
-    image: 'docker-registry.yes.com.sv/cocina-planilla:frontend-v6'
+    image: 'docker-registry.yes.com.sv/cocina-planilla:frontend-v7'
     container_name: planilla-front
     restart: unless-stopped
     expose:
