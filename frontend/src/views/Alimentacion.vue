@@ -325,7 +325,11 @@ export default {
     },
     formatDate(date) {
       if (!date) return ''
-      return new Date(date).toLocaleDateString('es-SV')
+      // Extraemos solo la porción de fecha para evitar desfases de zona horaria
+      const datePart = date.includes('T') ? date.split('T')[0] : date;
+      const d = new Date(datePart + 'T00:00:00');
+      if (isNaN(d.getTime())) return date;
+      return d.toLocaleDateString('es-SV')
     },
     calculateTotal() {
       this.form.costo_desayunos = this.form.desayunos * 0.24
