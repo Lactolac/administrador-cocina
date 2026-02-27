@@ -145,19 +145,22 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      fecha, descripcion, mes, anio,
       desayunos, almuerzos, cenas, refrigerios,
       costo_desayunos, costo_almuerzos, costo_cenas, total
     } = req.body;
 
     const query = `
       UPDATE ${schema}.alimentacion_servida 
-      SET desayunos = $1, almuerzos = $2, cenas = $3, refrigerios = $4,
-          costo_desayunos = $5, costo_almuerzos = $6, costo_cenas = $7, total = $8
-      WHERE id = $9
+      SET fecha = $1, descripcion = $2, mes = $3, anio = $4,
+          desayunos = $5, almuerzos = $6, cenas = $7, refrigerios = $8,
+          costo_desayunos = $9, costo_almuerzos = $10, costo_cenas = $11, total = $12
+      WHERE id = $13
       RETURNING *
     `;
 
     const result = await pool.query(query, [
+      fecha, descripcion, mes, anio,
       desayunos, almuerzos, cenas, refrigerios,
       costo_desayunos, costo_almuerzos, costo_cenas, total, id
     ]);

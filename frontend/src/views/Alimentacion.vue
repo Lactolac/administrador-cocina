@@ -306,6 +306,18 @@ export default {
       anios: [2026, 2025, 2024]
     }
   },
+  watch: {
+    'form.fecha'(newVal) {
+      if (newVal) {
+        // Añadir T00:00:00 asegura que tome la fecha en la zona horaria local usando const date = new Date(newVal + 'T00:00:00')
+        const date = new Date(newVal + 'T00:00:00');
+        if (!isNaN(date.getTime())) {
+          this.form.mes = this.meses[date.getMonth()].value;
+          this.form.anio = date.getFullYear();
+        }
+      }
+    }
+  },
   methods: {
     formatNumber(num) {
       if (!num) return '0.00'
