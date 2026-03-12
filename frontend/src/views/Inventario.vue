@@ -123,8 +123,17 @@
               item-value="id"
               label="Producto"
               variant="outlined"
-              class="mb-3"
+              class="mb-1"
             ></v-select>
+            <v-combobox
+              v-model="form.proveedor"
+              :items="proveedoresList"
+              label="Proveedor"
+              variant="outlined"
+              hint="Seleccione o escriba un nuevo proveedor"
+              class="mb-3"
+            ></v-combobox>
+
             <v-row>
               <v-col cols="6">
                 <v-text-field
@@ -217,6 +226,8 @@ export default {
       productos: [],
       categorias: [],
       proveedores: [],
+      proveedoresList: [],
+
       resumen: { costo_total: 0 },
       filters: { mes: '', anio: 2026, categoria: '', proveedor: '' },
       form: {
@@ -227,8 +238,10 @@ export default {
         inv_inicial: 0,
         inv_final: 0,
         precio_unitario: 0,
-        total_inventario: 0
+        total_inventario: 0,
+        proveedor: ''
       },
+
       editingItem: null,
       headers: [
         { title: 'Proveedor', key: 'proveedor' },
@@ -266,7 +279,23 @@ export default {
       ]
     }
   },
+  watch: {
+    'form.producto_id'(newVal) {
+      if (newVal) {
+        const product = this.productos.find(p => p.id === newVal);
+        if (product) {
+          // Solo autofilear si es un nuevo registro
+          if (!this.editingItem) {
+            this.form.proveedor = product.proveedor || '';
+            this.form.precio_unitario = product.precio_unitario || 0;
+          }
+        }
+      }
+    }
+  },
   methods: {
+
+
     formatNumber(num) {
       if (!num) return '0.00'
       return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -287,7 +316,9 @@ export default {
         const catRes = await productosService.getCategorias()
         this.categorias = catRes.data
         const provRes = await productosService.getProveedores()
+        this.proveedoresList = provRes.data
         this.proveedores = provRes.data.map(p => ({ value: p, title: p }))
+
       } catch (error) {
         console.error('Error loading productos:', error)
       }
@@ -321,14 +352,26 @@ export default {
           inv_inicial: 0,
           inv_final: 0,
           precio_unitario: 0,
-          total_inventario: 0
+          total_inventario: 0,
+          proveedor: ''
         }
+
       }
       this.dialog = true
     },
     async saveItem() {
       try {
+        // Verificar si el proveedor cambió y actualizar el producto si es necesario
+        const selectedProduct = this.productos.find(p => p.id === this.form.producto_id);
+        if (selectedProduct && selectedProduct.proveedor !== this.form.proveedor) {
+          await productosService.update(selectedProduct.id, {
+            ...selectedProduct,
+            proveedor: this.form.proveedor
+          });
+        }
+
         if (this.editingItem) {
+
           await inventarioService.update(this.editingItem.id, this.form)
           Swal.fire('¡Actualizado!', 'Registro actualizado correctamente', 'success')
         } else {
@@ -337,7 +380,9 @@ export default {
         }
         this.dialog = false
         this.loadInventario()
+        this.loadProductos()
       } catch (error) {
+
         console.error('Error saving item:', error)
         Swal.fire('Error', 'Error al guardar el registro', 'error')
       }
