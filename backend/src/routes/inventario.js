@@ -87,21 +87,21 @@ router.get('/resumen', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
-      producto_id, fecha, inv_inicial, inv_final, precio_unitario, 
-      total_inventario, mes, anio
+      producto_id, fecha, inv_inicial, ingresos, consumo, inv_final,
+      precio_unitario, total_inventario, mes, anio
     } = req.body;
 
     const query = `
-      INSERT INTO ${schema}.inventario 
-      (producto_id, fecha, inv_inicial, inv_final, precio_unitario,
-       total_inventario, mes, anio)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO ${schema}.inventario
+      (producto_id, fecha, inv_inicial, ingresos, consumo, inv_final,
+       precio_unitario, total_inventario, mes, anio)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
 
     const result = await pool.query(query, [
-      producto_id, fecha, inv_inicial, inv_final, precio_unitario,
-      total_inventario, mes, anio
+      producto_id, fecha, inv_inicial, ingresos || 0, consumo || 0,
+      inv_final, precio_unitario, total_inventario, mes, anio
     ]);
 
     res.status(201).json(result.rows[0]);
@@ -116,19 +116,20 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      inv_inicial, inv_final, precio_unitario, total_inventario
+      inv_inicial, ingresos, consumo, inv_final, precio_unitario, total_inventario
     } = req.body;
 
     const query = `
-      UPDATE ${schema}.inventario 
-      SET inv_inicial = $1, inv_final = $2, precio_unitario = $3,
-          total_inventario = $4, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $5
+      UPDATE ${schema}.inventario
+      SET inv_inicial = $1, ingresos = $2, consumo = $3, inv_final = $4,
+          precio_unitario = $5, total_inventario = $6
+      WHERE id = $7
       RETURNING *
     `;
 
     const result = await pool.query(query, [
-      inv_inicial, inv_final, precio_unitario, total_inventario, id
+      inv_inicial, ingresos || 0, consumo || 0, inv_final,
+      precio_unitario, total_inventario, id
     ]);
 
     if (result.rows.length === 0) {

@@ -173,6 +173,24 @@
             <v-row>
               <v-col cols="6">
                 <v-text-field
+                  v-model="form.ingresos"
+                  label="Ingresos (Cantidad)"
+                  type="number"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-text-field
+                  v-model="form.consumo"
+                  label="Consumo (Cantidad)"
+                  type="number"
+                  variant="outlined"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="6">
+                <v-text-field
                   v-model="form.inv_final"
                   label="Inv. Final (Cantidad)"
                   type="number"
@@ -236,6 +254,8 @@ export default {
         mes: 'Enero',
         anio: 2026,
         inv_inicial: 0,
+        ingresos: 0,
+        consumo: 0,
         inv_final: 0,
         precio_unitario: 0,
         total_inventario: 0,
@@ -249,6 +269,8 @@ export default {
         { title: 'Unidad', key: 'unidad_medida' },
         { title: 'Categoría', key: 'categoria' },
         { title: 'Inv. Inicial', key: 'inv_inicial', align: 'end' },
+        { title: 'Ingresos', key: 'ingresos', align: 'end' },
+        { title: 'Consumo', key: 'consumo', align: 'end' },
         { title: 'Inv. Final', key: 'inv_final', align: 'end' },
         { title: 'Precio Unit.', key: 'precio_unitario', align: 'end' },
         { title: 'Total ($)', key: 'total_inventario', align: 'end' },
@@ -350,6 +372,8 @@ export default {
           mes: 'Enero',
           anio: 2026,
           inv_inicial: 0,
+          ingresos: 0,
+          consumo: 0,
           inv_final: 0,
           precio_unitario: 0,
           total_inventario: 0,

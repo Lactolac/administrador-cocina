@@ -43,6 +43,10 @@ const createTables = async () => {
       // Column already exists, ignore error
     }
 
+    // Agregar columnas ingresos y consumo a inventario si no existen
+    await pool.query(`ALTER TABLE ${schema}.inventario ADD COLUMN IF NOT EXISTS ingresos DECIMAL(10,2)`);
+    await pool.query(`ALTER TABLE ${schema}.inventario ADD COLUMN IF NOT EXISTS consumo DECIMAL(10,2)`);
+
     // Tabla de inventario/movimientos
     await pool.query(`
       CREATE TABLE IF NOT EXISTS ${schema}.inventario (
