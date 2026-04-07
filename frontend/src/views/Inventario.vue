@@ -59,6 +59,17 @@
               @update:modelValue="loadInventario"
             ></v-select>
           </v-col>
+          <v-col cols="12" md="12">
+            <v-text-field
+              v-model="search"
+              label="Buscar producto"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              clearable
+              hide-details
+            ></v-text-field>
+          </v-col>
         </v-row>
       </v-card-text>
     </v-card>
@@ -82,6 +93,7 @@
         :headers="headers"
         :items="inventario"
         :items-per-page="10"
+        :search="search"
         class="elevation-1"
       >
         <template v-slot:item.proveedor="{ item }">
@@ -240,6 +252,7 @@ export default {
   data() {
     return {
       dialog: false,
+      search: '',
       inventario: [],
       productos: [],
       categorias: [],
