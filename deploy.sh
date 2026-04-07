@@ -3,8 +3,8 @@
 # Configuración
 REGISTRY="docker-registry.yes.com.sv"
 PROJECT="cocina-planilla"
-BACKEND_TAG="backend-v3"
-FRONTEND_TAG="frontend-v9"
+BACKEND_TAG="backend-latest"
+FRONTEND_TAG="frontend-latest"
 
 echo "🚀 Iniciando proceso de despliegue para $PROJECT..."
 
