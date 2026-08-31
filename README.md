@@ -65,15 +65,15 @@ npm install
 
 ### 3. Configurar Variables de Entorno
 
-El archivo `backend/.env` ya está configurado con los datos proporcionados:
+Creá `backend/.env` con los datos del entorno. No versiones credenciales ni hosts internos:
 
 ```env
-DB_NAME=tomapedidos
-DB_USER=tomapedidos
-DB_PASSWORD=Lac2025+
-DB_HOST=192.168.101.77
+DB_NAME=<nombre_base>
+DB_USER=<usuario_base>
+DB_PASSWORD=<contrasenia_segura>
+DB_HOST=<host_base>
 DB_PORT=5432
-DB_SCHEMA=administradorcocina
+DB_SCHEMA=<schema>
 PORT=3001
 ```
 
@@ -230,5 +230,15 @@ La aplicación estará disponible en: `http://localhost:5173`
 - Bootstrap Icons
 
 ## Licencia
+
+## Notas operativas verificadas
+
+La API se monta en `backend/src/index.js`: `/api/inventario`, `/api/alimentacion`, `/api/planilla`, `/api/empleados`, `/api/productos`, `/api/reportes`, `/api/auth` y `/api/usuarios`. Las rutas incluyen resúmenes, cálculo de planilla, horas extra/descuentos y reportes consolidados, costos, tendencias, eficiencia, consumo y proveedores. Los archivos de `backend/src/routes/` son la referencia de filtros y payloads.
+
+Variables leídas: `PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SCHEMA` y `JWT_SECRET`. No hay `.env.example`; no copies los defaults sensibles del compose a documentación o código nuevo.
+
+`docker-compose.yml` es actualmente un stack de producción (imágenes del registry, red externa, sin build local), pese a su nombre. El backend escucha 3001 y el healthcheck consulta `/api/auth/verify`. No existe suite de pruebas ni migraciones versionadas; el modelo se inicializa desde `backend/src/models/index.js`. Respaldá la DB antes de cambios.
+
+Seguridad: aplicá auth/RBAC a rutas de usuarios y mutaciones, validá números/fechas en servidor y mantené SQL parametrizado. Ante 502 revisá `planilla-back`, puerto 3001 y red; ante cálculos inconsistentes, zona horaria y reglas de `planilla.js`; ante DB, schema/permisos.
 
 Proyecto privado para uso interno.
