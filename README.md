@@ -45,7 +45,7 @@ CocinaPlanilla/
 CREATE DATABASE tomapedidos;
 
 -- Crear el usuario
-CREATE USER tomapedidos WITH PASSWORD 'Lac2025+';
+CREATE USER tomapedidos WITH PASSWORD '<contrasenia_segura>';
 
 -- Otorgar permisos
 GRANT ALL PRIVILEGES ON DATABASE tomapedidos TO tomapedidos;
